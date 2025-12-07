@@ -1,5 +1,50 @@
 # AGENTS.md - Instructions for AI Coding Agents
 
+## Issue Tracking with Beads
+
+This project uses [Beads](https://github.com/steveyegge/beads) for issue tracking. Track ALL work in beads, not markdown TODOs or external systems.
+
+### Essential Commands
+
+```bash
+# Find work
+bd ready                              # Show issues ready to work (no blockers)
+bd list --status=open                 # All open issues
+bd show <id>                          # Detailed issue view
+
+# Create & update
+bd create --title="..." --type=task   # New issue (task, bug, or feature)
+bd update <id> --status=in_progress   # Claim work
+bd close <id>                         # Mark complete
+bd close <id1> <id2> ...              # Close multiple at once
+
+# Dependencies
+bd dep add <issue> <depends-on>       # Add dependency
+bd blocked                            # Show blocked issues
+```
+
+### Workflow
+
+**Starting work:**
+```bash
+bd ready                                    # Find available work
+bd update <id> --status=in_progress         # Claim it
+```
+
+**Completing work:**
+```bash
+bd close <id>                               # Close completed issues
+git add . && git commit -m "..."            # Commit changes
+```
+
+### TODO Format
+
+All TODOs must reference a bead:
+```bash
+# TODO(BD-abc123): description    # Good
+# TODO: description               # Bad - will be flagged by beads-hk
+```
+
 ## Project Overview
 
 **beads-hk**: Git hook integration for [Beads](https://github.com/steveyegge/beads) issue tracker using [hk](https://hk.jdx.dev).
@@ -32,18 +77,21 @@ test/          - Test suite
 - Functions prefixed with `cmd_` are CLI commands
 - Helper functions are internal
 
-### Testing
+### Development Commands
 
 ```bash
-make test
+mise run setup    # Setup dev environment (installs tools, hooks)
+mise run test     # Run tests (bats test/beads-hk.bats)
+mise run check    # Run linters (shellcheck, shfmt)
+mise run fix      # Auto-fix formatting
 ```
 
 Tests use a mocked `bd` command to avoid requiring real beads installation.
 
 ### Before Committing
 
-1. Run: `make lint`
-2. Run: `make test`
+1. Run: `mise run check`
+2. Run: `mise run test`
 3. Update README if adding commands
 
 ## Agent-Specific Instructions
@@ -78,7 +126,9 @@ This project should follow its own advice:
 Always run the full test suite:
 
 ```bash
-./test/run_tests.sh
+mise run test
+# Or run a single test:
+bats test/beads-hk.bats --filter "test name"
 ```
 
 For manual testing with real beads:
