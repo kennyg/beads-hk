@@ -152,7 +152,7 @@ cmd_check_todos() {
 		echo ""
 		echo "To fix, either:"
 		echo "  1. Add bead reference: ${BOLD}TODO(BD-xxx): description${NC}"
-		echo "  2. File a new bead:    ${BOLD}$BEADS_CMD add --title 'TODO: description'${NC}"
+		echo "  2. File a new bead:    ${BOLD}$BEADS_CMD create 'TODO: description'${NC}"
 		echo ""
 
 		maybe_fail
@@ -186,11 +186,10 @@ cmd_health_check() {
 
 			if [[ "$BEADS_HK_AUTO_FILE" == "true" ]]; then
 				local bead_id
-				bead_id=$($BEADS_CMD add \
-					--title "Health: Split large file $file" \
-					--description "File has $line_count lines (threshold: $BEADS_HK_MAX_FILE_LINES). Consider splitting into smaller modules." \
-					--tag "health" \
-					--tag "auto-filed" \
+				bead_id=$($BEADS_CMD create \
+					"Health: Split large file $file" \
+					-d "File has $line_count lines (threshold: $BEADS_HK_MAX_FILE_LINES). Consider splitting into smaller modules." \
+					-l "health,auto-filed" \
 					2>/dev/null | grep -oE 'BD-[a-zA-Z0-9]+' || echo "")
 				if [[ -n "$bead_id" ]]; then
 					log_info "  → Filed bead: $bead_id"
@@ -343,11 +342,10 @@ report_long_function() {
 
 	if [[ "$BEADS_HK_AUTO_FILE" == "true" ]]; then
 		local bead_id
-		bead_id=$($BEADS_CMD add \
-			--title "Health: Refactor long function $name" \
-			--description "Function $name in $file has $length lines (threshold: $BEADS_HK_MAX_FUNC_LINES). Consider extracting helper functions." \
-			--tag "health" \
-			--tag "auto-filed" \
+		bead_id=$($BEADS_CMD create \
+			"Health: Refactor long function $name" \
+			-d "Function $name in $file has $length lines (threshold: $BEADS_HK_MAX_FUNC_LINES). Consider extracting helper functions." \
+			-l "health,auto-filed" \
 			2>/dev/null | grep -oE 'BD-[a-zA-Z0-9]+' || echo "")
 		if [[ -n "$bead_id" ]]; then
 			log_info "  → Filed bead: $bead_id"
@@ -368,7 +366,7 @@ cmd_prepare_commit_msg() {
 
 	# Get in-progress beads
 	local in_progress
-	in_progress=$($BEADS_CMD list --status=in-progress 2>/dev/null || true)
+	in_progress=$($BEADS_CMD list --status=in_progress 2>/dev/null || true)
 
 	if [[ -n "$in_progress" ]]; then
 		# Check if message already has bead references
@@ -465,7 +463,7 @@ cmd_post_commit() {
 	for bead_id in $close_ids; do
 		if bead_exists "$bead_id"; then
 			log_info "Closing $bead_id (commit: $commit_hash)"
-			$BEADS_CMD update "$bead_id" --status=done 2>/dev/null || true
+			$BEADS_CMD update "$bead_id" --status=closed 2>/dev/null || true
 		else
 			log_warn "Bead $bead_id not found, skipping"
 		fi
@@ -489,7 +487,7 @@ cmd_check_merge_risk() {
 
 	# Get in-progress beads
 	local in_progress
-	in_progress=$($BEADS_CMD list --status=in-progress 2>/dev/null || true)
+	in_progress=$($BEADS_CMD list --status=in_progress 2>/dev/null || true)
 
 	if [[ -z "$in_progress" ]]; then
 		log_success "No merge risk detected (no other in-progress beads)"
@@ -506,7 +504,7 @@ cmd_check_merge_risk() {
 	done
 	echo ""
 	echo "Consider coordinating before pushing large changes."
-	echo "Run '${BOLD}$BEADS_CMD list --status=in-progress${NC}' for details."
+	echo "Run '${BOLD}$BEADS_CMD list --status=in_progress${NC}' for details."
 }
 
 #------------------------------------------------------------------------------

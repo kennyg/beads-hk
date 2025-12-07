@@ -94,7 +94,7 @@ All TODOs must reference a bead:
 
 Or file a bead first:
 ```bash
-bd add --title "Fix the thing" --tag todo
+bd create "Fix the thing" -l todo
 # Returns BD-xyz789
 
 # Then in code:
@@ -185,7 +185,7 @@ Add to your `AGENTS.md`:
 ## Issue Tracking
 
 Use Beads for all issue tracking:
-- File beads for discovered work: `bd add --title "..." --tag health`
+- File beads for discovered work: `bd create "..." -l health`
 - Reference beads in commits: `Relates-to: BD-xxx` or `Closes BD-xxx`
 - All TODOs must include bead ID: `TODO(BD-xxx): description`
 

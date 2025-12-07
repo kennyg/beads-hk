@@ -59,7 +59,7 @@ echo "$@" >> "$BD_CALLS_LOG" 2>/dev/null || true
 
 case "$1" in
     list)
-        if [[ "$2" == "--status=in-progress" ]]; then
+        if [[ "$2" == "--status=in_progress" ]]; then
             cat <<EOF
 BD-abc123  [in-progress] Implement user authentication
 BD-def456  [in-progress] Fix database connection bug
