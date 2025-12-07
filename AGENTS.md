@@ -13,14 +13,17 @@ bd list --status=open                 # All open issues
 bd show <id>                          # Detailed issue view
 
 # Create & update
-bd create --title="..." --type=task   # New issue (task, bug, or feature)
+bd create "Issue title" --type=task   # New issue (task, bug, feature, epic)
 bd update <id> --status=in_progress   # Claim work
 bd close <id>                         # Mark complete
-bd close <id1> <id2> ...              # Close multiple at once
 
 # Dependencies
-bd dep add <issue> <depends-on>       # Add dependency
+bd dep add <issue> <blocker>          # Issue is blocked by blocker
 bd blocked                            # Show blocked issues
+
+# Project health
+bd stats                              # Open/closed/blocked counts
+bd doctor                             # Check for sync issues
 ```
 
 ### Workflow
@@ -35,6 +38,14 @@ bd update <id> --status=in_progress         # Claim it
 ```bash
 bd close <id>                               # Close completed issues
 git add . && git commit -m "..."            # Commit changes
+```
+
+### Git Sync
+
+Beads syncs with git automatically via hooks. Manual sync if needed:
+```bash
+bd sync                           # Full sync (export + import check)
+bd sync --flush-only              # Export only (used in pre-commit)
 ```
 
 ### TODO Format
