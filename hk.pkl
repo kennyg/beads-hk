@@ -1,0 +1,34 @@
+// hk.pkl - Git hooks for beads-hk development
+//
+// Install: hk install
+
+amends "package://github.com/jdx/hk/releases/download/v1.2.0/hk@1.2.0#/Config.pkl"
+
+hooks {
+
+  //----------------------------------------------------------------------------
+  // pre-commit
+  //----------------------------------------------------------------------------
+  ["pre-commit"] {
+    stash = "git"
+
+    steps {
+      //------------------------------------------------------------------------
+      // Bash linting (check only)
+      //------------------------------------------------------------------------
+      ["shellcheck"] {
+        glob = List("*.sh", "*.bash", "bin/*")
+        check = "shellcheck {{files}}"
+      }
+
+      //------------------------------------------------------------------------
+      // Bash formatting (with auto-fix)
+      //------------------------------------------------------------------------
+      ["shfmt"] {
+        glob = List("*.sh", "*.bash", "bin/*")
+        check = "shfmt -d {{files}}"
+        fix = "shfmt -w {{files}}"
+      }
+    }
+  }
+}

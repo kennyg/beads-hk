@@ -1,0 +1,170 @@
+// hk.pkl - Git hook configuration with Beads integration
+//
+// This is an example configuration. Copy to your project root and customize.
+//
+// Prerequisites:
+//   - hk: mise use hk (or see https://hk.jdx.dev)
+//   - beads: go install github.com/steveyegge/beads/cmd/bd@latest
+//   - beads-hk: in your PATH
+//
+// Install: hk install
+
+amends "package://github.com/jdx/hk/releases/download/v1.2.0/hk@1.2.0#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v1.2.0/hk@1.2.0#/Builtins.pkl"
+
+//------------------------------------------------------------------------------
+// Customize these patterns for your project
+//------------------------------------------------------------------------------
+
+local codeFiles = List(
+  "*.py",
+  "*.ts",
+  "*.tsx",
+  "*.js",
+  "*.jsx",
+  "*.go",
+  "*.rs"
+)
+
+local docFiles = List(
+  "*.md",
+  "*.txt",
+  "*.rst"
+)
+
+//------------------------------------------------------------------------------
+// Hook definitions
+//------------------------------------------------------------------------------
+
+hooks {
+
+  //----------------------------------------------------------------------------
+  // prepare-commit-msg
+  // Suggests in-progress beads to reference in your commit
+  //----------------------------------------------------------------------------
+  ["prepare-commit-msg"] {
+    steps {
+      ["beads-suggest"] {
+        run = "beads-hk prepare-commit-msg {{commit_msg_file}}"
+      }
+    }
+  }
+
+  //----------------------------------------------------------------------------
+  // pre-commit
+  // Runs before commit is created
+  //----------------------------------------------------------------------------
+  ["pre-commit"] {
+    fix = true
+    stash = "git"
+
+    steps {
+      //------------------------------------------------------------------------
+      // Beads: TODO accountability
+      // Ensures all TODOs reference a bead for tracking
+      // Runs first (exclusive) to fail fast
+      //------------------------------------------------------------------------
+      ["beads-todo"] {
+        glob = codeFiles
+        check = "beads-hk check-todos {{files}}"
+        exclusive = true
+      }
+
+      //------------------------------------------------------------------------
+      // Standard linters (run in parallel)
+      // Customize based on your stack
+      //------------------------------------------------------------------------
+      ["prettier"] = Builtins.prettier
+      ["eslint"] = Builtins.eslint
+      // ["black"] = Builtins.black
+      // ["ruff"] = Builtins.ruff
+      // ["gofmt"] = Builtins.gofmt
+      // ["rustfmt"] = Builtins.rustfmt
+
+      //------------------------------------------------------------------------
+      // Beads: Code health checks (optional)
+      // Enable with: HK_PROFILE=health git commit
+      // Or: HK_PROFILE=thorough git commit
+      //------------------------------------------------------------------------
+      ["beads-health"] {
+        glob = codeFiles
+        check = "beads-hk health-check {{files}}"
+        profiles = List("health", "thorough")
+      }
+
+      //------------------------------------------------------------------------
+      // Beads: Auto-file health issues (optional)
+      // Enable with: HK_PROFILE=auto-file git commit
+      //------------------------------------------------------------------------
+      ["beads-health-autofile"] {
+        glob = codeFiles
+        check = "BEADS_HK_AUTO_FILE=true beads-hk health-check {{files}}"
+        profiles = List("auto-file")
+      }
+    }
+  }
+
+  //----------------------------------------------------------------------------
+  // commit-msg
+  // Validates commit message format
+  //----------------------------------------------------------------------------
+  ["commit-msg"] {
+    steps {
+      //------------------------------------------------------------------------
+      // Beads: Require bead reference (optional strict mode)
+      // Enable with: HK_PROFILE=strict git commit
+      //------------------------------------------------------------------------
+      ["beads-validate"] {
+        check = "BEADS_HK_STRICT=true beads-hk validate-commit-msg {{commit_msg_file}}"
+        profiles = List("strict")
+      }
+
+      //------------------------------------------------------------------------
+      // Conventional commits (optional)
+      // Uncomment to enforce conventional commit format
+      //------------------------------------------------------------------------
+      // ["conventional"] = Builtins.conventional_commit
+    }
+  }
+
+  //----------------------------------------------------------------------------
+  // post-commit
+  // Runs after commit is created
+  //----------------------------------------------------------------------------
+  ["post-commit"] {
+    steps {
+      //------------------------------------------------------------------------
+      // Beads: Auto-close referenced beads
+      // Triggers on "Closes BD-xxx" or "Fixes BD-xxx" in commit message
+      //------------------------------------------------------------------------
+      ["beads-update"] {
+        run = "beads-hk post-commit"
+      }
+    }
+  }
+
+  //----------------------------------------------------------------------------
+  // pre-push
+  // Runs before pushing to remote
+  //----------------------------------------------------------------------------
+  ["pre-push"] {
+    steps {
+      //------------------------------------------------------------------------
+      // Beads: Merge risk warning
+      // Warns if other in-progress beads might conflict
+      //------------------------------------------------------------------------
+      ["beads-merge-risk"] {
+        check = "beads-hk check-merge-risk"
+      }
+
+      //------------------------------------------------------------------------
+      // Run tests before push (optional)
+      // Skip with: HK_PROFILE=quick git push
+      //------------------------------------------------------------------------
+      // ["test"] {
+      //   check = "npm test"
+      //   profiles = List("!quick")
+      // }
+    }
+  }
+}

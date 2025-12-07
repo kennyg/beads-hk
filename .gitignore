@@ -1,0 +1,24 @@
+# Editor
+.vscode/
+.idea/
+.claude/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test artifacts
+test/tmp/
+*.log
+
+# Node modules (for bats testing)
+node_modules/
+package-lock.json
+
+# Build artifacts (if Go rewrite happens)
+/beads-hk
+dist/
+test/.bats-libs/

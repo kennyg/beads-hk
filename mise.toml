@@ -1,0 +1,84 @@
+[tools]
+hk = "latest"
+pkl = "latest"
+bats = "latest"
+shellcheck = "latest"
+shfmt = "latest"
+
+[env]
+# Add bin to PATH so beads-hk is available
+_.path = ["./bin"]
+
+[tasks.setup]
+description = "Set up development environment"
+run = '''
+#!/usr/bin/env bash
+set -e
+echo ""
+echo "  ⚙️  Setting up beads-hk development environment..."
+echo ""
+mise install
+hk install
+echo ""
+echo "  ┌────────────────────────────────────┐"
+echo "  │  ✅ Development environment ready  │"
+echo "  └────────────────────────────────────┘"
+echo ""
+echo "  Available commands:"
+echo "    mise run test     - run tests"
+echo "    mise run check    - run linters"
+echo "    mise run install  - install beads-hk"
+echo ""
+'''
+
+[tasks.test]
+description = "Run bats tests"
+run = "bats test/beads-hk.bats"
+
+[tasks.check]
+description = "Run hk pre-commit checks"
+run = "hk run pre-commit --all"
+
+[tasks.fix]
+description = "Run hk pre-commit with auto-fix"
+run = "hk run pre-commit --all --fix"
+
+[tasks.install]
+description = "Install beads-hk to ~/.local/bin"
+run = '''
+#!/usr/bin/env bash
+set -e
+PREFIX="${PREFIX:-$HOME/.local}"
+mkdir -p "$PREFIX/bin"
+cp bin/beads-hk "$PREFIX/bin/"
+chmod +x "$PREFIX/bin/beads-hk"
+echo ""
+echo "  ┌──────────────────────────────────────────┐"
+echo "  │  ✨ beads-hk installed successfully! ✨  │"
+echo "  └──────────────────────────────────────────┘"
+echo ""
+echo "  📍 Location: $PREFIX/bin/beads-hk"
+echo "  📖 Usage:    beads-hk --help"
+echo ""
+if [[ ":$PATH:" != *":$PREFIX/bin:"* ]]; then
+  echo "  ⚠️  Add to PATH: export PATH=\"$PREFIX/bin:\$PATH\""
+  echo ""
+fi
+'''
+
+[tasks.uninstall]
+description = "Remove beads-hk from ~/.local/bin"
+run = '''
+#!/usr/bin/env bash
+PREFIX="${PREFIX:-$HOME/.local}"
+if [[ -f "$PREFIX/bin/beads-hk" ]]; then
+  rm -f "$PREFIX/bin/beads-hk"
+  echo ""
+  echo "  ┌────────────────────────────────────┐"
+  echo "  │  🗑️  beads-hk uninstalled          │"
+  echo "  └────────────────────────────────────┘"
+  echo ""
+else
+  echo "  ⚠️  beads-hk not found at $PREFIX/bin/beads-hk"
+fi
+'''
